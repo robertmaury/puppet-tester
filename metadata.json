@@ -7,6 +7,11 @@
   "source": "https://github.com/robertmaury/puppet-tester.git",
   "project_page": "https://github.com/robertmaury/puppet-tester",
   "issues_url": "https://github.com/robertmaury/puppet-tester/issues",
+  "operatingsystem_support": [
+    {
+    "operatingsystem":"RedHat",
+    "operatingsystemrelease":[ "5.0", "6.0" ]
+    },
   "dependencies": [
     {
       "name": "puppetlabs-stdlib",
