@@ -27,7 +27,16 @@ class tester (
     ]
 
 
-  package { 'git': }
+
+  Service <| title == 'jenkins' |> {
+    hasrestart => true,
+    restart    => 'service jenkins restart && while true; do \
+      java -jar /usr/lib/jenkins/jenkins-cli.jar -s http://localhost:8080 \
+      version && break; sleep 5; done',
+    start      => 'service jenkins start && while true; do \
+      java -jar /usr/lib/jenkins/jenkins-cli.jar -s http://localhost:8080 \
+      version && break; sleep 5; done',
+  }
 
   if $::is_pe {
     $gem_provider = 'pe_gem'
@@ -50,8 +59,8 @@ class tester (
 
   jenkins::plugin { $plugins: }
 
-  jenkins::job { 'Puppet':
-    config => template('tester/config.xml.erb')
+  jenkins::job { 'puppet':
+    config  => template('tester/config.xml.erb'),
   }
 
 }
