@@ -15,65 +15,63 @@
 
 ## Overview
 
-A one-maybe-two sentence summary of what the module does/what problem it solves.
-This is your 30 second elevator pitch for your module. Consider including
-OS/Puppet version it works with.
+Low friction way of working tests into your Puppet module workflow.
 
 ## Module Description
 
-If applicable, this section should have a brief description of the technology
-the module integrates with and what that integration enables. This section
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?"
-
-If your module has a range of functionality (installation, configuration,
-management, etc.) this is the time to mention it.
+tester will install Jenkins and a simple job that will clone a git repo and run
+Puppet Lint tests against it. All plugin prerequisites are accounted for.
 
 ## Setup
 
+Make sure the rtyler-jenkins module is in your modulepath. The repository containing
+the code you want to test needs to have a Rakefile defining the tests you want to run.
+I have borrowed the Rakefile from rtyler-jenkins for my use.
+
+    require 'rubygems'
+    require 'rake'
+    require 'puppetlabs_spec_helper/rake_tasks'
+    require 'puppet-lint/tasks/puppet-lint'
+    require 'puppet-syntax/tasks/puppet-syntax'
+    
+    exclude_paths = [
+      "pkg/**/*",
+      "vendor/**/*",
+      "spec/**/*",
+      "contrib/**/*"
+    ]
+    
+    # Make sure we don't have the default rake task floating around
+    Rake::Task['lint'].clear
+    
+    PuppetLint.configuration.relative = true
+    PuppetLint::RakeTask.new(:lint) do |l|
+      l.disable_checks = %w(80chars class_inherits_from_params_class)
+      l.ignore_paths = exclude_paths
+      l.fail_on_warnings = true
+      l.log_format = "FUK %{path}:%{linenumber}:%{check}:%{KIND}:%{message}"
+    end
+    
+    PuppetSyntax.exclude_paths = exclude_paths
+    
+    task :default => [:lint, :spec, :syntax] 
+
 ### What tester affects
 
-* A list of files, packages, services, or operations that the module will alter,
-  impact, or execute on the system it's installed on.
-* This is a great place to stick any warnings.
-* Can be in list or paragraph form.
-
-### Setup Requirements **OPTIONAL**
-
-If your module requires anything extra before setting up (pluginsync enabled,
-etc.), mention it here.
-
-### Beginning with tester
-
-The very basic steps needed for a user to get the module up and running.
-
-If your most recent release breaks compatibility or requires particular steps
-for upgrading, you may wish to include an additional section here: Upgrading
-(For an example, see http://forge.puppetlabs.com/puppetlabs/firewall).
+* Installs Java and Jenkins via the rtyler-jenkins module.
 
 ## Usage
 
-Put the classes, types, and resources for customizing, configuring, and doing
-the fancy stuff with your module here.
+Parameters -
 
-## Reference
-
-Here, list the classes, types, providers, facts, etc contained in your module.
-This section should include all of the under-the-hood workings of your module so
-people know what the module is touching on their system but don't need to mess
-with things. (We are working on automating this section!)
+  git_repo           (required) - String. The repository of the module (or modules) you want to test.
+  configure_firewall (optional) - Boolean. Set to false if you are not configuring iptables on your host. 
+                                  Defaults to true.
 
 ## Limitations
 
-This is where you list OS compatibility, version compatibility, etc.
+Only tested on RHEL 6 and Puppet Enterprise
 
 ## Development
 
-Since your module is awesome, other users will want to play with it. Let them
-know what the ground rules for contributing are.
-
-## Release Notes/Contributors/Etc **Optional**
-
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You may also add any additional sections you feel are
-necessary or important to include here. Please use the `## ` header.
+Pull requests are welcome at https://www.github.com/robertmaury/puppet-tester
