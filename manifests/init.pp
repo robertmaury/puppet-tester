@@ -27,15 +27,11 @@ class tester (
     ]
 
 
-
+# Allow time for the Jenkins service to come up completely
   Service <| title == 'jenkins' |> {
     hasrestart => true,
-    restart    => 'service jenkins restart && while true; do \
-      java -jar /usr/lib/jenkins/jenkins-cli.jar -s http://localhost:8080 \
-      version && break; sleep 5; done',
-    start      => 'service jenkins start && while true; do \
-      java -jar /usr/lib/jenkins/jenkins-cli.jar -s http://localhost:8080 \
-      version && break; sleep 5; done',
+    restart    => '/etc/init.d/jenkins restart && sleep 20',
+    start      => '/etc/init.d/jenkins start && sleep 20',
   }
 
   if $::is_pe {
